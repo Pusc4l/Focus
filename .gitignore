@@ -1,3 +1,10 @@
 node_modules
 dist
 .DS_Store
+
+# Tambahan exclude file internal & folder aset lokal
+RULES.md
+PRD.md
+AGENTS.md
+image/
+*.zip
