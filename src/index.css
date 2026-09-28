@@ -1,0 +1,151 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", system-ui, sans-serif;
+  color: #2a2a35;
+  background: #e9e5dc;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app-shell {
+  max-width: 28rem;
+  margin: 0 auto;
+  height: 100vh;
+  height: 100dvh;
+  position: relative;
+  overflow: hidden;
+  background: #fdf6ec;
+  box-shadow: 0 0 60px rgba(0, 0, 0, 0.08);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+button {
+  font-family: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid #2b3050;
+  outline-offset: 2px;
+}
+
+
+/* ---- Themes: colors as CSS variables so all screens switch together ---- */
+:root,
+[data-theme="warm"] {
+  --grad-main: linear-gradient(160deg, #E8895C 0%, #F3B98A 45%, #CFE0C4 100%);
+  --grad-break: linear-gradient(160deg, #CDE7D6 0%, #A9D3C4 55%, #7FB9C9 100%);
+  --grad-card: linear-gradient(135deg, #E8895C 0%, #EDA36E 100%);
+  --a1: 232 137 92;
+  --a2: 243 185 138;
+  --a3: 207 224 196;
+  --c-peach: 251 200 160;
+  --c-clay: 232 137 92;
+  --c-ember: 217 112 74;
+  --c-sage: 143 188 148;
+  --c-moss: 95 139 107;
+  --c-oncard: 255 255 255;
+}
+
+[data-theme="cool"] {
+  --grad-main: linear-gradient(160deg, #B9CCF5 0%, #D7C9F2 50%, #C9EBDD 100%);
+  --grad-break: linear-gradient(160deg, #D4F0E4 0%, #BFE3EC 55%, #C9D8F5 100%);
+  --grad-card: linear-gradient(135deg, #A9C0F2 0%, #C7B5F0 100%);
+  --a1: 185 204 245;
+  --a2: 215 201 242;
+  --a3: 201 235 221;
+  --c-peach: 199 210 245;
+  --c-clay: 143 168 232;
+  --c-ember: 92 96 200;
+  --c-sage: 150 200 180;
+  --c-moss: 62 146 126;
+  --c-oncard: 43 48 80;
+}
+
+[data-theme="sakura"] {
+  --grad-main: linear-gradient(160deg, #F7C6D9 0%, #FBE0D0 50%, #D9ECD3 100%);
+  --grad-break: linear-gradient(160deg, #E2F1DC 0%, #CDE8E0 55%, #D8E4F5 100%);
+  --grad-card: linear-gradient(135deg, #F4A9C4 0%, #F8C8B0 100%);
+  --a1: 247 198 217;
+  --a2: 251 224 208;
+  --a3: 217 236 211;
+  --c-peach: 250 215 220;
+  --c-clay: 240 150 180;
+  --c-ember: 200 70 118;
+  --c-sage: 170 210 180;
+  --c-moss: 74 140 108;
+  --c-oncard: 43 48 80;
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(250%); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.5s ease both;
+}
+
+.animate-float {
+  animation: floatY 4s ease-in-out infinite;
+}
+
+.bg-animated-warm {
+  background: linear-gradient(120deg, rgb(var(--a1)), rgb(var(--a2)), rgb(var(--a3)), rgb(var(--a1)));
+  background-size: 300% 300%;
+  animation: gradientShift 14s ease infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float,
+  .bg-animated-warm,
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
