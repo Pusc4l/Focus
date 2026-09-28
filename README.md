@@ -1,101 +1,97 @@
-# focus — Aplikasi Pomodoro (Revisi Besar v1.0.1)
+# 🍅 Focus - Modern Pomodoro & Productivity Web App
 
-Aplikasi Pomodoro mobile-first — **React (Vite) + Tailwind CSS + Lucide React**,
-100% berjalan di sisi klien dengan `localStorage`, tanpa backend.
+<div align="center">
+  <img src="public/logo-bird.png" alt="Focus Logo" width="120" height="120" />
+  <p><b>Aplikasi Pomodoro elegan berbasis web untuk meningkatkan produktivitas harianmu.</b></p>
+</div>
 
-## Menjalankan
+---
+
+## 🎯 Purpose & Features
+
+**Focus** is a feature-rich, sleek, and minimalist Pomodoro timer web application designed to help users boost their daily productivity, manage tasks effectively, customize ambient focus sounds, and track their study or work habits over time.
+
+* **Customizable Pomodoro Timer:** Easily adjust focus durations, short breaks, and long breaks to match your workflow.
+* **Core Task Management:** Assign tasks directly to the active timer session. Completed focus sessions automatically log time and update historical charts.
+* **Ambient Soundscapes:** Built-in seamless loop audio player featuring rain, forest, waves, and fireplace sounds to enhance concentration.
+* **Do Not Disturb (DND) Mode:** Blocks distractions while a focus session is actively running.
+* **Multiple Color Themes:** Switch between modern aesthetic themes with smooth transition loading effects.
+* **Profile & Data Management:** Multi-profile switching support with options to manage and delete profiles cleanly.
+* **Productivity History & Analytics:** Visual charts tracking your focus consistency and total completed tasks.
+* **Progressive Web App (PWA):** Fully installable directly onto mobile or desktop devices as a native application via the in-app Settings menu.
+
+## 🛠️ Tech Stack & Languages
+
+* **Frontend Framework:** React (Vite)
+* **Styling:** Tailwind CSS
+* **Languages:** JavaScript (ES6+), HTML5, CSS3
+* **Icons & UI Assets:** Lucide React / Custom SVG / 3D Illustrations
+* **State & Storage:** React Hooks & Browser LocalStorage
+
+## 📂 Project Structure
+
+```text
+Focus/
+├── public/
+│   ├── sounds/           # Local ambient sound .mp3 files
+│   ├── logo-bird.png     # Application logo & branding
+│   ├── manifest.json     # PWA Web App Manifest
+│   └── sw.js             # Service Worker for offline support
+├── src/
+│   ├── components/       # Reusable UI elements & modals
+│   ├── screens/          # Main application views (Home, Timer, History, Settings)
+│   ├── hooks/            # Custom logic hooks (Timer, Audio, DND, PWA Install)
+│   ├── utils/            # Helper functions
+│   ├── App.jsx           # Root wrapper component
+│   ├── MainApp.jsx       # Core application layout & routing logic
+│   └── index.css         # Tailwind & custom styling directives
+├── package.json          # Project dependencies & scripts
+├── tailwind.config.js    # Tailwind configuration
+└── vite.config.js        # Vite bundler configuration
+```
+
+## 🚀 Getting Started & Local Installation
+
+If you want to run or test this project locally on your machine, follow these simple steps:
+
+### 1. Prerequisites
+
+Make sure you have [Node.js](https://nodejs.org/) installed on your computer.
+
+### 2. Clone the Repository
+
+Open your terminal and clone the repository:
+
+```bash
+git clone https://github.com/Pusc4l/Focus.git
+cd Focus
+```
+
+### 3. Install Dependencies
+
+Install all required project packages via npm:
 
 ```bash
 npm install
-npm run dev       # development server
-npm run build     # build produksi ke folder dist/
-npm run preview   # preview hasil build
 ```
 
-## Struktur Proyek
+### 4. Run Development Server
 
-```
-public/sounds/               # rain.mp3, forest.mp3, wave.mp3, fire.mp3 (ambient loop)
-src/
-  main.jsx                   # entry point
-  App.jsx                    # alur global: Splash → Onboarding → Input Profil → MainApp
-  MainApp.jsx                # shell per-akun: timer, tasks, audio, navigasi 4 tab
-  index.css                  # Tailwind layers + keyframes animasi (fadeInUp, float, gradientShift)
-  hooks/
-    useLocalStorage.js       # localStorage wrapper aman (parsing + fallback)
-    usePomodoroTimer.js      # state machine timer: focus → short/long break
-    useAccounts.js           # bookkeeping multi-akun + auto-purge cache basi
-    useAccountData.js        # data per-akun (tasks/settings/sessions) dalam satu key
-    useWeeklyStats.js        # progres harian & grafik mingguan dihitung dari log sesi
-    useAmbientAudio.js       # engine audio loop lokal, master volume independen
-  data/
-    mascots.jsx               # ilustrasi maskot (owl, fox, sloth) sebagai SVG inline
-  components/
-    Navbar, Timer, TaskList, Statistics, Settings, Modals,
-    SoundMixerPanel, AccountSwitcher
-  screens/
-    Splash, Onboarding, ProfileInput, Home, Focus,
-    TaskScreen, History, SettingsScreen
+Start the local development server:
+
+```bash
+npm run dev
 ```
 
-## Ringkasan Revisi v1.0.1
+### 5. Build for Production & PWA Testing
 
-1. **Onboarding & Profil** — setelah Splash + Onboarding, wajib mengisi Nama +
-   kategori (Self Learner/Mahasiswa/Siswa/Lainnya) tanpa email/password. Nama
-   tampil dinamis di Home & Settings.
-2. **Home tanpa dummy data** — akun baru mulai bersih. Progress harian & grafik
-   mingguan dihitung langsung dari log sesi bertanggal, jadi otomatis "reset"
-   setiap hari berganti tanpa counter yang bisa basi. Visual dipercantik dengan
-   gradasi hangat beranimasi (`bg-animated-warm`) dan micro-animation
-   (`animate-fadeInUp`, `animate-float`).
-3. **Core Timer** — font timer diperbesar (~4.25rem), transisi warna halus saat
-   masuk mode istirahat, tombol dengan efek `active:scale-95`.
-4. **Task Management** — empty state asli untuk akun baru, tombol edit
-   (pensil) dan hapus (sampah) di tiap kartu tugas dengan konfirmasi hapus.
-5. **Settings & Audio Mixer**
-   - Kontras teks judul section diperkuat (`text-ink/80` + `drop-shadow`).
-   - 4 suara ambient memutar file lokal `/public/sounds/*.mp3` lewat
-     `HTML5 Audio` dengan `loop = true` — *seamless looping* selama dipilih.
-   - **Master Volume independen**: volume akhir = `(level track/100) ×
-     (master/100)` — track 100% + master 10% tetap hanya berbunyi 10%.
-   - "Profil Saya" membuka bottom-sheet daftar akun tersimpan + tombol
-     **Tambah User** yang mengulang alur Splash → Onboarding → Input Profil,
-     data akun lama tidak tertimpa (setiap akun punya key `localStorage` sendiri).
-   - Tentang Kami: versi **1.0.1**, © **Pascal**.
-6. **Performa & Cache** — setiap akun disimpan di
-   `focus.account.<id>.data` (tasks+settings+sessions dalam satu key).
-   Saat aplikasi dimuat, `purgeStaleCache()` otomatis membuang key versi lama
-   dan data akun yang sudah tidak ada, serta riwayat sesi dibatasi ke 200
-   entri terbaru per akun agar tetap ringan.
+To create an optimized production build:
 
-## Catatan
-- Audio ambient akan mulai diputar begitu track dipilih (di Sound Board layar
-  Focus atau panel Mixer di Settings) — beberapa track bisa aktif bersamaan.
-- Menekan **Stop** pada sesi fokus akan menghentikan semua ambient sound juga.
+```bash
+npm run build
+npm run preview
+```
 
-## Revisi Terakhir (v1.0.1)
+## 📄 License & Copyright
 
-1. **Input Profil** — placeholder nama kini "Masukkan nama".
-2. **Tugas → Timer → History** — ketuk tugas (Home atau tab Focus) dan timer langsung berjalan untuk tugas itu.
-   Sesi selesai *atau* dihentikan di tengah jalan (tercatat minimal 1 menit) → durasi masuk History
-   (grafik, total, riwayat) dan tugas otomatis ditandai selesai. Tanggal harian memakai zona waktu lokal.
-3. **Toggle & DND** — baris switch dipisah dari baris tombol (tidak lagi bersarang) dan tiap switch punya label sendiri.
-   DND aktif selama sesi fokus berjalan: tab lain dikunci, pengingat "10 menit tersisa" ditahan, dan muncul lencana
-   "Jangan Ganggu aktif". (Halaman web tidak bisa menyalakan DND tingkat sistem operasi.)
-4. **Tema** — Gradasi Hangat, Pastel Sejuk, Pastel Sakura (CSS variables di `index.css`) dengan overlay loading
-   singkat saat berganti tema; berlaku di semua layar dan tersimpan per akun.
-5. **Tentang Kami** — halaman baru (logo burung 3D di `public/logo-bird.png`, deskripsi, Instagram/GitHub/Email,
-   Kebijakan Privasi, Syarat & Ketentuan, © 2026 Pascal). Teks ada di `src/data/legal.js`.
-6. **Audio ambient** — dimuat saat tombol ditekan, `loop = true`; nama file asli maupun alias
-   (`rain.mp3`, dst.) dicoba otomatis dan error tampil di UI. Volume akhir = level track × master.
-
-## PWA (Install ke Home Screen)
-
-- `public/manifest.json` — nama "Focus - Pomodoro & Productivity", short name "Focus", `display: standalone`,
-  ikon `/logo-bird.png` + `icon-192.png`, `icon-512.png`, `icon-maskable-512.png` (dibuat dari logo burung).
-- `public/sw.js` — service worker minimal (app shell bisa dibuka offline; file audio tidak di-cache).
-  Didaftarkan hanya pada build produksi di `src/main.jsx`.
-- `src/hooks/usePwaInstall.js` — menangkap event `beforeinstallprompt` sejak aplikasi dimuat.
-- Settings → Akun & Lainnya → **Install Aplikasi (PWA)**: memanggil dialog instalasi native; bila belum tersedia
-  (mis. iOS Safari) tampil panduan manual.
-- Syarat: harus dibuka lewat **HTTPS** (Vercel/Netlify) atau `localhost`. Uji dengan `npm run build && npm run preview`.
+© 2026 Muhammad Triarso Pascal. All rights reserved. Built with passion for productivity and portfolio excellence.
