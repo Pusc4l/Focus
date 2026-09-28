@@ -4,6 +4,7 @@ import { usePomodoroTimer } from "./hooks/usePomodoroTimer";
 import { useAmbientAudio } from "./hooks/useAmbientAudio";
 import { useWeeklyStats, isoDate } from "./hooks/useWeeklyStats";
 import { notify } from "./utils/notify";
+import { DEFAULT_THEME, themeColorOf } from "./data/themes";
 import Home from "./screens/Home";
 import Focus from "./screens/Focus";
 import TaskScreen from "./screens/TaskScreen";
@@ -15,7 +16,11 @@ import { AddTaskModal } from "./components/Modals";
 
 const DAILY_GOAL = 8;
 
-export default function MainApp({ accountId, profile, accounts, onSwitchAccount, onAddAccount, onDeleteAccount }) {
+function setThemeColor(color) {
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", color);
+}
+
+export default function MainApp({ accountId, profile, accounts, onSwitchAccount, onAddAccount, onDeleteAccount, pwa }) {
   const { tasks, settings, sessions, setTasks, setSettings, setSessions } = useAccountData(accountId);
   const [tab, setTab] = useState("home");
   const [focusView, setFocusView] = useState("list"); // "list" | "timer"
@@ -33,11 +38,13 @@ export default function MainApp({ accountId, profile, accounts, onSwitchAccount,
   // ---- Theme: applied on <html> so every screen re-colors together ----
   useEffect(() => {
     document.documentElement.dataset.theme = settings.theme;
+    setThemeColor(themeColorOf(settings.theme)); // status bar / title bar color of the installed app
   }, [settings.theme]);
 
   useEffect(
     () => () => {
       delete document.documentElement.dataset.theme;
+      setThemeColor(themeColorOf(DEFAULT_THEME));
       fxTimers.current.forEach(clearTimeout);
     },
     []
@@ -214,6 +221,7 @@ export default function MainApp({ accountId, profile, accounts, onSwitchAccount,
           onAddAccount={onAddAccount}
           onDeleteAccount={onDeleteAccount}
           onChangeTheme={changeTheme}
+          pwa={pwa}
           audio={audio}
         />
       )}

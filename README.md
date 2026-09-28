@@ -88,3 +88,14 @@ src/
    Kebijakan Privasi, Syarat & Ketentuan, © 2026 Pascal). Teks ada di `src/data/legal.js`.
 6. **Audio ambient** — dimuat saat tombol ditekan, `loop = true`; nama file asli maupun alias
    (`rain.mp3`, dst.) dicoba otomatis dan error tampil di UI. Volume akhir = level track × master.
+
+## PWA (Install ke Home Screen)
+
+- `public/manifest.json` — nama "Focus - Pomodoro & Productivity", short name "Focus", `display: standalone`,
+  ikon `/logo-bird.png` + `icon-192.png`, `icon-512.png`, `icon-maskable-512.png` (dibuat dari logo burung).
+- `public/sw.js` — service worker minimal (app shell bisa dibuka offline; file audio tidak di-cache).
+  Didaftarkan hanya pada build produksi di `src/main.jsx`.
+- `src/hooks/usePwaInstall.js` — menangkap event `beforeinstallprompt` sejak aplikasi dimuat.
+- Settings → Akun & Lainnya → **Install Aplikasi (PWA)**: memanggil dialog instalasi native; bila belum tersedia
+  (mis. iOS Safari) tampil panduan manual.
+- Syarat: harus dibuka lewat **HTTPS** (Vercel/Netlify) atau `localhost`. Uji dengan `npm run build && npm run preview`.

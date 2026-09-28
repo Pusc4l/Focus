@@ -48,6 +48,26 @@ export function SwitchRow({ icon, label, value, checked, onChange }) {
   );
 }
 
+// Row with a pill action button on the right (e.g. "Install"). The row itself
+// is a plain div, so the button is the only tappable element.
+export function ActionRow({ icon, label, value, actionLabel, onAction, done = false }) {
+  return (
+    <div className="w-full flex items-center gap-3 px-4 py-3.5">
+      <RowBody icon={icon} label={label} value={value} />
+      {done ? (
+        <span className="text-xs font-semibold text-moss bg-moss/10 rounded-full px-3 py-1.5 shrink-0">Terpasang</span>
+      ) : (
+        <button
+          onClick={onAction}
+          className="text-xs font-semibold text-white bg-navy rounded-full px-4 py-2 shrink-0 active:scale-95 transition-transform"
+        >
+          {actionLabel}
+        </button>
+      )}
+    </div>
+  );
+}
+
 export function ToggleSwitch({ checked, onChange, label }) {
   return (
     <button

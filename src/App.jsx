@@ -5,6 +5,7 @@ import Splash from "./screens/Splash";
 import Onboarding from "./screens/Onboarding";
 import ProfileInput from "./screens/ProfileInput";
 import MainApp from "./MainApp";
+import { usePwaInstall } from "./hooks/usePwaInstall";
 
 export default function App() {
   const [accounts, setAccounts] = useLocalStorage(ACCOUNTS_KEY, []);
@@ -13,6 +14,7 @@ export default function App() {
 
   const [stage, setStage] = useState(() => (hasActiveAccount ? "app" : "splash"));
   const [addingNew, setAddingNew] = useState(false);
+  const pwa = usePwaInstall(); // must stay mounted from startup to catch beforeinstallprompt
 
   // Auto-purge legacy/orphaned localStorage entries once per app load, so
   // the app keeps loading fast even after many accounts come and go.
@@ -103,6 +105,7 @@ export default function App() {
       onSwitchAccount={handleSwitchAccount}
       onAddAccount={handleAddAccount}
       onDeleteAccount={handleDeleteAccount}
+      pwa={pwa}
     />
   );
 }

@@ -1,0 +1,20 @@
+{
+  "id": "/",
+  "name": "Focus - Pomodoro & Productivity",
+  "short_name": "Focus",
+  "description": "Aplikasi Pomodoro dengan timer fokus, daftar tugas, dan suara ambient yang menenangkan.",
+  "lang": "id",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FDF6EC",
+  "theme_color": "#E8895C",
+  "categories": ["productivity", "lifestyle"],
+  "icons": [
+    { "src": "/logo-bird.png", "sizes": "320x320", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

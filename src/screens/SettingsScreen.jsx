@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { CloudRain, Bell, Moon, User, Palette, Info } from "lucide-react";
-import { SettingsSection, SettingsRow, SwitchRow, Stepper } from "../components/Settings";
+import { CloudRain, Bell, Moon, User, Palette, Info, Download } from "lucide-react";
+import { SettingsSection, SettingsRow, SwitchRow, ActionRow, Stepper } from "../components/Settings";
+import { InstallHelpSheet } from "../components/InstallHelp";
 import { SoundMixerPanel } from "../components/SoundMixerPanel";
 import { AccountSwitcherModal } from "../components/AccountSwitcher";
 import { ThemePicker } from "../components/ThemePicker";
@@ -19,15 +20,23 @@ export default function SettingsScreen({
   onAddAccount,
   onDeleteAccount,
   onChangeTheme,
+  pwa,
   audio,
 }) {
   const [showMixer, setShowMixer] = useState(false);
   const [showAccounts, setShowAccounts] = useState(false);
   const [showThemes, setShowThemes] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
+  const [showInstallHelp, setShowInstallHelp] = useState(false);
   const update = (patch) => onUpdateSettings({ ...settings, ...patch });
 
   if (showAbout) return <AboutScreen onBack={() => setShowAbout(false)} />;
+
+  // Native install dialog when the browser offered it; otherwise show manual steps.
+  async function handleInstall() {
+    if (pwa.canInstall) await pwa.promptInstall();
+    else setShowInstallHelp(true);
+  }
 
   function toggleNotifications(on) {
     update({ notificationsEnabled: on });
@@ -90,6 +99,14 @@ export default function SettingsScreen({
       <SettingsSection title="Akun & Lainnya">
         <SettingsRow icon={User} label="Profil Saya" value={`${profile.name} · ${profile.category}`} onClick={() => setShowAccounts(true)} />
         <SettingsRow icon={Palette} label="Tema Aplikasi" value={themeLabel(settings.theme)} onClick={() => setShowThemes(true)} />
+        <ActionRow
+          icon={Download}
+          label="Install Aplikasi (PWA)"
+          value={pwa.installed ? "Focus sudah ada di layar utama" : "Pasang ke layar utama HP"}
+          actionLabel="Install"
+          done={pwa.installed}
+          onAction={handleInstall}
+        />
         <SettingsRow icon={Info} label="Tentang Kami" value="Versi 1.0.1" onClick={() => setShowAbout(true)} />
       </SettingsSection>
 
@@ -109,6 +126,8 @@ export default function SettingsScreen({
           onClose={() => setShowMixer(false)}
         />
       )}
+
+      {showInstallHelp && <InstallHelpSheet ios={pwa.ios} onClose={() => setShowInstallHelp(false)} />}
 
       {showThemes && (
         <ThemePicker
