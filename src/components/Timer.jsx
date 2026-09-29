@@ -1,5 +1,6 @@
 import { Play, RotateCcw, CloudRain, Wind, Waves, Flame, Volume2, VolumeX } from "lucide-react";
 import { TRACKS } from "../hooks/useAmbientAudio";
+import { OwlPeek } from "../data/mascots";
 
 const ICONS = { rain: CloudRain, forest: Wind, wave: Waves, fire: Flame };
 
@@ -12,7 +13,14 @@ export function CircularTimer({ minutes, seconds, progress, phase, isRunning }) 
 
   return (
     <div className="relative w-72 h-72 mx-auto">
-      <svg viewBox="0 0 260 260" className="w-full h-full -rotate-90">
+      {/* Soft glow behind the ring — purely decorative, adds life without noise */}
+      <div
+        className={`absolute inset-2 rounded-full blur-2xl animate-glow ${isRunning ? "opacity-70" : "opacity-30"}`}
+        style={{ background: barColor }}
+        aria-hidden="true"
+      />
+
+      <svg viewBox="0 0 260 260" className="relative w-full h-full -rotate-90">
         <circle cx="130" cy="130" r={radius} fill="none" strokeWidth="14" style={{ stroke: trackColor }} />
         <circle
           cx="130"
@@ -26,19 +34,36 @@ export function CircularTimer({ minutes, seconds, progress, phase, isRunning }) 
           style={{ stroke: barColor, transition: "stroke-dashoffset 1s linear" }}
         />
       </svg>
+
+      {/* Glass backdrop guarantees digit contrast on every theme/gradient */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div
+          className="w-48 h-48 rounded-full shadow-inner backdrop-blur-md"
+          style={{ background: "rgb(var(--c-timerglass) / 0.55)" }}
+          aria-hidden="true"
+        />
+      </div>
+
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span
-          className={`font-display font-extrabold text-ink tabular-nums leading-none transition-transform ${
+          className={`font-display font-extrabold text-ink tabular-nums leading-none transition-transform drop-shadow-sm ${
             isRunning ? "scale-100" : "scale-95"
           }`}
           style={{ fontSize: "4.25rem" }}
         >
           {minutes}:{seconds}
         </span>
-        <span className="text-navy/60 font-semibold mt-2 text-sm tracking-wide uppercase">
+        <span className="text-ink/70 font-bold mt-2 text-sm tracking-wide uppercase">
           {phase === "focus" ? "Focus" : phase === "shortBreak" ? "Istirahat Pendek" : "Istirahat Panjang"}
         </span>
       </div>
+
+      {/* A little owl peeking from the ring while a focus session runs */}
+      {phase === "focus" && (
+        <div className="absolute -bottom-2 -right-2 drop-shadow-md">
+          <OwlPeek className="w-14 h-14" />
+        </div>
+      )}
     </div>
   );
 }
@@ -82,7 +107,7 @@ export function TimerControls({ isRunning, onStart, onReset, onRequestStop, mute
 export function SoundBoard({ activeTracks, onToggle, error }) {
   return (
     <div className="mt-10 animate-fadeInUp" style={{ animationDelay: "200ms" }}>
-      <p className="text-navy/70 font-medium mb-3">Sounds to Focus</p>
+      <p className="text-ink/70 font-semibold mb-3">Sounds to Focus</p>
       <div className="grid grid-cols-4 gap-3">
         {TRACKS.map(({ key, label }) => {
           const Icon = ICONS[key];

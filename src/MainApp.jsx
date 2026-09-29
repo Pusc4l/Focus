@@ -4,6 +4,7 @@ import { usePomodoroTimer } from "./hooks/usePomodoroTimer";
 import { useAmbientAudio } from "./hooks/useAmbientAudio";
 import { useWeeklyStats, isoDate } from "./hooks/useWeeklyStats";
 import { notify } from "./utils/notify";
+import { alarm, unlockAudio } from "./utils/alarm";
 import { DEFAULT_THEME, themeColorOf } from "./data/themes";
 import Home from "./screens/Home";
 import Focus from "./screens/Focus";
@@ -12,6 +13,7 @@ import History from "./screens/History";
 import SettingsScreen from "./screens/SettingsScreen";
 import Navbar from "./components/Navbar";
 import ThemeTransition from "./components/ThemeTransition";
+import FloatingPlayer from "./components/FloatingPlayer";
 import { AddTaskModal } from "./components/Modals";
 
 const DAILY_GOAL = 8;
@@ -29,6 +31,10 @@ export default function MainApp({ accountId, profile, accounts, onSwitchAccount,
   const [muted, setMuted] = useState(false);
   const [focusCompleteToken, setFocusCompleteToken] = useState(0);
   const [recordedNotice, setRecordedNotice] = useState(null);
+  // Explicit flag for "a pomodoro cycle is under way" — independent of
+  // isRunning/elapsedSeconds so pausing in the very first second (or during
+  // the auto-paused moment between focus and break) never hides the player.
+  const [sessionActive, setSessionActive] = useState(false);
   const [themeFx, setThemeFx] = useState(null); // { target, stage: "in" | "out" }
   const fxTimers = useRef([]);
 
@@ -113,31 +119,41 @@ export default function MainApp({ accountId, profile, accounts, onSwitchAccount,
     shortBreakMinutes: settings.shortBreakMinutes,
     longBreakMinutes: settings.longBreakMinutes,
     cyclesBeforeLongBreak: settings.cyclesBeforeLongBreak,
+    // Fires exactly when a phase's countdown reaches zero on its own — never
+    // on a manual Stop/Skip — which is what should trigger the alarm chime,
+    // vibration, and (if enabled) an OS notification.
     onSessionComplete: ({ phase, durationMinutes }) => {
       if (phase === "focus") {
         recordFocus(durationMinutes);
         setActiveTaskId(null);
         setFocusCompleteToken((t) => t + 1);
+        alarm("focus");
         if (settings.notificationsEnabled) notify("Sesi fokus selesai 🎉", `${durationMinutes} menit fokus tercatat. Waktunya istirahat!`);
-      } else if (settings.notificationsEnabled) {
-        notify("Istirahat selesai", "Siap untuk sesi fokus berikutnya?");
+      } else {
+        setSessionActive(false); // break finished on its own -> back to a fresh, idle focus
+        alarm("break");
+        if (settings.notificationsEnabled) notify("Istirahat selesai", "Siap untuk sesi fokus berikutnya?");
       }
     },
   });
 
   // Tap a task -> open the timer and start it for that task.
   function startTask(id) {
+    unlockAudio();
     setTab("focus");
     setFocusView("timer");
     if (timer.isRunning) return; // a session is already counting; just show it
     setActiveTaskId(id);
+    setSessionActive(true);
     timer.startFocus();
   }
 
   function startFocusForToday() {
+    unlockAudio();
     setActiveTaskId(null);
     setFocusView("timer");
     setTab("focus");
+    if (!timer.isRunning) setSessionActive(true);
   }
 
   // Stop midway: whatever time already ran is logged (even 1 minute) and the
@@ -152,12 +168,49 @@ export default function MainApp({ accountId, profile, accounts, onSwitchAccount,
     timer.reset();
     audio.stopAll();
     setActiveTaskId(null);
+    setSessionActive(false);
+  }
+
+  // Shared by the full Focus screen's "Lewati Istirahat" and the mini
+  // player's Skip: jump straight back into a fresh, idle focus phase.
+  function handleSkipBreak() {
+    timer.skipBreak();
+    setSessionActive(false);
+  }
+
+  // Floating mini-player's "Skip Sesi": end a focus session early (same
+  // accounting as Stop) or, on a break, jump straight back into focus —
+  // mirrors the two explicit actions already on the full Focus screen.
+  function skipSession() {
+    if (timer.phase === "focus") handleConfirmStop();
+    else handleSkipBreak();
+  }
+
+  function togglePlayPause() {
+    if (timer.isRunning) timer.pause();
+    else {
+      unlockAudio();
+      timer.start();
+    }
   }
 
   // ---- Do Not Disturb: while a focus session runs, lock the other tabs and
   // silence in-app reminders. (A web page cannot toggle the OS-level DND.)
   const dndActive = settings.dndDuringFocus && timer.isRunning && timer.phase === "focus";
   const reminderEnabled = settings.notificationsEnabled && !dndActive;
+
+  // If DND switches on (or was already on) while the user is elsewhere,
+  // snap back to the running timer instead of merely blocking future taps —
+  // this is what makes the lock "real" rather than cosmetic.
+  useEffect(() => {
+    if (dndActive && !(tab === "focus" && focusView === "timer")) {
+      setTab("focus");
+      setFocusView("timer");
+    }
+  }, [dndActive, tab, focusView]);
+
+  const onFocusTimerScreen = tab === "focus" && focusView === "timer";
+  const showFloatingPlayer = sessionActive && !onFocusTimerScreen;
 
   return (
     <div className="app-shell">
@@ -173,6 +226,7 @@ export default function MainApp({ accountId, profile, accounts, onSwitchAccount,
           sessionsToday={stats.sessionsToday}
           dailyGoal={DAILY_GOAL}
           weekStatus={stats.weekStatus}
+          dndActive={dndActive}
         />
       )}
 
@@ -189,6 +243,7 @@ export default function MainApp({ accountId, profile, accounts, onSwitchAccount,
           focusMinutes={settings.focusMinutes}
           onBackToTasks={!timer.isRunning ? () => setFocusView("list") : null}
           onConfirmStop={handleConfirmStop}
+          onSkipBreak={handleSkipBreak}
           dndActive={dndActive}
           reminderEnabled={reminderEnabled}
           recordedNotice={recordedNotice}
@@ -223,6 +278,21 @@ export default function MainApp({ accountId, profile, accounts, onSwitchAccount,
           onChangeTheme={changeTheme}
           pwa={pwa}
           audio={audio}
+        />
+      )}
+
+      {showFloatingPlayer && (
+        <FloatingPlayer
+          timer={timer}
+          taskTitle={activeTask?.title ?? ""}
+          muted={muted}
+          onToggleMute={() => setMuted((m) => !m)}
+          onPlayPause={togglePlayPause}
+          onSkip={skipSession}
+          onOpen={() => {
+            setTab("focus");
+            setFocusView("timer");
+          }}
         />
       )}
 

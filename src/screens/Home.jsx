@@ -1,6 +1,7 @@
-import { Settings as SettingsIcon } from "lucide-react";
+import { Settings as SettingsIcon, Lock } from "lucide-react";
 import { OwlSleeping } from "../data/mascots";
 import { HomeTaskPreview } from "../components/TaskList";
+import AmbientSparkles from "../components/AmbientSparkles";
 
 const WEEK = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -15,9 +16,11 @@ export default function Home({
   sessionsToday,
   dailyGoal,
   weekStatus,
+  dndActive,
 }) {
   return (
-    <div className="h-full bg-animated-warm px-5 pt-14 pb-24 overflow-y-auto no-scrollbar">
+    <div className="h-full bg-animated-warm px-5 pt-14 pb-24 overflow-y-auto no-scrollbar relative">
+      <AmbientSparkles />
       <div className="flex items-center justify-between mb-5 animate-fadeInUp">
         <div>
           <p className="text-ink/70 text-sm">Halo,</p>
@@ -25,10 +28,14 @@ export default function Home({
         </div>
         <button
           onClick={onOpenSettings}
-          className="w-10 h-10 rounded-full bg-white/50 flex items-center justify-center active:scale-95 transition-transform"
+          disabled={dndActive}
+          title={dndActive ? "Jangan Ganggu aktif" : undefined}
+          className={`w-10 h-10 rounded-full bg-white/50 flex items-center justify-center transition-transform ${
+            dndActive ? "opacity-40" : "active:scale-95"
+          }`}
           aria-label="Pengaturan"
         >
-          <SettingsIcon size={19} className="text-navy" />
+          {dndActive ? <Lock size={17} className="text-navy" /> : <SettingsIcon size={19} className="text-navy" />}
         </button>
       </div>
 

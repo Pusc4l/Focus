@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import { GlassWater, PersonStanding, Wind as BreathIcon, ChevronLeft, AlarmClock, Moon, CheckCircle2 } from "lucide-react";
 import { CircularTimer, TimerControls, SoundBoard } from "../components/Timer";
 import { ConfirmModal, SessionCompleteModal, ToastNotice } from "../components/Modals";
-import { OwlSleeping } from "../data/mascots";
+import { OwlSleeping, CoffeeCup } from "../data/mascots";
+import AmbientSparkles from "../components/AmbientSparkles";
+import { unlockAudio } from "../utils/alarm";
 
 const RELAX_ACTIVITIES = [
   { key: "water", label: "Minum Air", icon: GlassWater },
@@ -21,6 +23,7 @@ export default function Focus({
   focusMinutes,
   onBackToTasks,
   onConfirmStop,
+  onSkipBreak,
   dndActive,
   reminderEnabled,
   recordedNotice,
@@ -42,6 +45,13 @@ export default function Focus({
     if (dndActive) setShowTenMinNotice(false);
   }, [dndActive]);
 
+  // The "10 minutes left" reminder only ever applies to the focus phase it
+  // was raised for — clear it the moment we leave focus (break starts, or a
+  // fresh cycle begins), so it can never bleed into the break screen.
+  useEffect(() => {
+    if (timer.phase !== "focus") setShowTenMinNotice(false);
+  }, [timer.phase]);
+
   // App.jsx bumps this token whenever a focus session completes.
   useEffect(() => {
     if (focusCompleteToken > 0) setShowComplete(true);
@@ -50,12 +60,19 @@ export default function Focus({
 
   const isBreak = timer.phase !== "focus";
 
+  function handleStart() {
+    unlockAudio(); // must run inside this tap for the alarm chime to be allowed later
+    timer.start();
+  }
+
   return (
     <div
       className={`h-full px-5 pt-14 pb-24 relative overflow-y-auto no-scrollbar transition-colors duration-700 ${
         isBreak ? "bg-break-grad" : "bg-warm-grad"
       }`}
     >
+      <AmbientSparkles />
+
       {recordedNotice && !showTenMinNotice && (
         <ToastNotice
           icon={CheckCircle2}
@@ -93,13 +110,13 @@ export default function Focus({
       )}
 
       {!isBreak && (
-        <div key="focus-view" className="animate-fadeInUp">
+        <div key="focus-view" className="relative animate-fadeInUp">
           {onBackToTasks && (
-            <button onClick={onBackToTasks} className="flex items-center gap-1 text-navy/60 text-sm mb-1">
+            <button onClick={onBackToTasks} className="flex items-center gap-1 text-ink/70 text-sm mb-1 font-medium">
               <ChevronLeft size={16} /> Tugas
             </button>
           )}
-          <p className="text-center text-navy/60 text-sm mb-1 truncate">{activeTaskTitle || "Sesi Fokus"}</p>
+          <p className="text-center text-ink/80 text-sm mb-1 truncate font-medium">{activeTaskTitle || "Sesi Fokus"}</p>
           {dndActive && (
             <p className="mx-auto w-fit flex items-center gap-1.5 text-xs font-semibold bg-navy text-white rounded-full px-3 py-1">
               <Moon size={12} /> Jangan Ganggu aktif
@@ -116,7 +133,7 @@ export default function Focus({
           </div>
           <TimerControls
             isRunning={timer.isRunning}
-            onStart={timer.start}
+            onStart={handleStart}
             onReset={timer.reset}
             muted={muted}
             onToggleMute={onToggleMute}
@@ -127,8 +144,9 @@ export default function Focus({
       )}
 
       {isBreak && (
-        <div key="break-view" className="animate-fadeInUp">
-          <p className="text-center text-ink font-semibold mb-4">Break Screen / Relax Mode</p>
+        <div key="break-view" className="relative animate-fadeInUp">
+          <p className="text-center text-ink font-bold text-lg mb-1">Waktu Istirahat ☕</p>
+          <p className="text-center text-ink/70 text-sm mb-4">Lepaskan sejenak, kamu sudah kerja keras.</p>
           <CircularTimer
             minutes={timer.minutes}
             seconds={timer.seconds}
@@ -136,12 +154,13 @@ export default function Focus({
             phase={timer.phase}
             isRunning={timer.isRunning}
           />
-          <div className="flex justify-center my-4">
-            <OwlSleeping className="w-16 h-16 animate-float" />
+          <div className="flex justify-center items-center gap-2 my-4">
+            <OwlSleeping className="w-16 h-16" />
+            <CoffeeCup className="w-9 h-9" />
           </div>
           <button
-            onClick={timer.skipBreak}
-            className="w-full bg-white/70 text-navy font-semibold py-3.5 rounded-full mb-6"
+            onClick={onSkipBreak}
+            className="w-full bg-white/70 text-navy font-semibold py-3.5 rounded-full mb-6 active:scale-[0.98] transition-transform"
           >
             Lewati Istirahat
           </button>
