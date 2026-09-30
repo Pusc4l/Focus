@@ -99,6 +99,7 @@ export function usePomodoroTimer({
     seconds: String(secondsLeft % 60).padStart(2, "0"),
     secondsLeft,
     elapsedSeconds,
+    totalSeconds,
     progress: totalSeconds ? elapsedSeconds / totalSeconds : 0,
     completedFocusCount,
     start,

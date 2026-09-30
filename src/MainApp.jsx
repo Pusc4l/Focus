@@ -5,6 +5,7 @@ import { useAmbientAudio } from "./hooks/useAmbientAudio";
 import { useWeeklyStats, isoDate } from "./hooks/useWeeklyStats";
 import { notify } from "./utils/notify";
 import { alarm, unlockAudio } from "./utils/alarm";
+import { useMediaSession } from "./hooks/useMediaSession";
 import { DEFAULT_THEME, themeColorOf } from "./data/themes";
 import Home from "./screens/Home";
 import Focus from "./screens/Focus";
@@ -194,6 +195,11 @@ export default function MainApp({ accountId, profile, accounts, onSwitchAccount,
     }
   }
 
+  function playFromMediaKeys() {
+    unlockAudio();
+    timer.start();
+  }
+
   // ---- Do Not Disturb: while a focus session runs, lock the other tabs and
   // silence in-app reminders. (A web page cannot toggle the OS-level DND.)
   const dndActive = settings.dndDuringFocus && timer.isRunning && timer.phase === "focus";
@@ -211,6 +217,24 @@ export default function MainApp({ accountId, profile, accounts, onSwitchAccount,
 
   const onFocusTimerScreen = tab === "focus" && focusView === "timer";
   const showFloatingPlayer = sessionActive && !onFocusTimerScreen;
+
+  // Publishes the session to the OS lock screen / notification bar (Media
+  // Session API) with working Play, Pause and Skip — active for as long as
+  // the mini player would be relevant, i.e. the whole time a session runs,
+  // regardless of which in-app screen is currently open.
+  useMediaSession({
+    active: sessionActive,
+    isRunning: timer.isRunning,
+    title: timer.phase === "focus" ? activeTask?.title ?? "Sesi Fokus" : "Waktu Istirahat ☕",
+    subtitle: timer.phase === "focus" ? "Focus" : timer.phase === "shortBreak" ? "Istirahat Pendek" : "Istirahat Panjang",
+    theme: settings.theme,
+    elapsedSeconds: timer.elapsedSeconds,
+    totalSeconds: timer.totalSeconds,
+    onPlay: playFromMediaKeys,
+    onPause: timer.pause,
+    onSkip: skipSession,
+    onStop: handleConfirmStop,
+  });
 
   return (
     <div className="app-shell">
